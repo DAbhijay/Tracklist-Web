@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Tracklist Web</title>
+
+    <link rel="stylesheet" href="tracklist.css" />
+    <script src="Tracklist JS/storage.js" defer></script>
+    <script src="Tracklist JS/datelibs.js" defer></script>
+    <script src="Tracklist JS/notifications.js" defer></script>
+    <script src="Tracklist JS/groceries.js" defer></script>
+    <script src="Tracklist JS/tasks.js" defer></script>
+    <script src="Tracklist JS/navigation.js" defer></script>
+    <script src="Tracklist JS/app.js" defer></script>
+  </head>
+
+  <body>
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay hidden">
+      <div class="loading-spinner"></div>
+      <p>Loading your data...</p>
+    </div>
+
+    <!-- Navigation Bar -->
+    <nav class="nav-bar">
+      <button type="button" class="nav-btn" data-page="home">
+        <span>🏠</span> Home
+      </button>
+      <button type="button" class="nav-btn" data-page="groceries">
+        <span>🛒</span> Groceries
+      </button>
+      <button type="button" class="nav-btn" data-page="tasks">
+        <span>✓</span> Tasks
+      </button>
+    </nav>
+
+    <main class="app-container">
+      
+      <!-- Homepage View -->
+      <section id="home-page" class="page active">
+        <div class="welcome-container">
+          <div class="welcome-content">
+            <h1 class="welcome-title">Welcome to Tracklist! 🎯</h1>
+            <p class="welcome-subtitle">Your all-in-one productivity companion</p>
+            <p class="welcome-description">
+              Stay organized and never forget what you need. Manage your grocery shopping 
+              and daily tasks effortlessly in one beautiful app.
+            </p>
+            
+            <div class="feature-cards">
+              <div class="feature-card" data-page="groceries">
+                <div class="feature-icon">🛒</div>
+                <h3>Grocery List</h3>
+                <p>Track your shopping items and purchase history</p>
+                <button type="button" class="feature-btn">Get Started</button>
+              </div>
+              
+              <div class="feature-card" data-page="tasks">
+                <div class="feature-icon">✓</div>
+                <h3>Task Manager</h3>
+                <p>Organize your tasks with due dates and priorities</p>
+                <button type="button" class="feature-btn">Get Started</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Groceries View -->
+      <section id="groceries-page" class="page">
+        <header class="page-header">
+          <h1>🛒 Grocery List</h1>
+          <p>Track your shopping items and purchase history</p>
+        </header>
+
+        <div class="list-container">
+          <div class="list-card">
+            <div class="list-header">
+              <h2>My Groceries</h2>
+              <button type="button" class="reset-btn" id="reset-groceries">
+                <span class="btn-text">Reset</span>
+                <span class="btn-spinner" style="display: none;">⏳</span>
+              </button>
+            </div>
+
+            <div class="add-form">
+              <input
+                type="text"
+                id="grocery-input"
+                placeholder="Add grocery item..."
+                required
+              />
+              <button type="button" class="add-btn" id="add-grocery-btn">
+                <span class="btn-text">Add</span>
+                <span class="btn-spinner" style="display: none;">⏳</span>
+              </button>
+            </div>
+
+            <ul id="grocery-items" class="items-list"></ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- Tasks View -->
+      <section id="tasks-page" class="page">
+        <header class="page-header">
+          <h1>✓ Task Manager</h1>
+          <p>Organize your tasks and stay on top of deadlines</p>
+        </header>
+
+        <div class="list-container">
+          <div class="list-card">
+            <div class="list-header">
+              <h2>My Tasks</h2>
+            </div>
+
+            <div class="add-form">
+              <input
+                type="text"
+                id="task-input"
+                placeholder="Add task..."
+                required
+              />
+              <input
+                type="date"
+                id="task-date"
+                class="date-input"
+                title="Due date (optional)"
+              />
+              <button type="button" class="add-btn" id="add-task-btn">
+                <span class="btn-text">Add Task</span>
+                <span class="btn-spinner" style="display: none;">⏳</span>
+              </button>
+            </div>
+
+            <ul id="task-items" class="items-list"></ul>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </body>
+</html>
