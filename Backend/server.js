@@ -20,7 +20,7 @@ app.use("/api/tasks", tasksRouter);
 
 // Root route
 app.get("/", (req, res) => {
-  res.send("Tracklist backend is running 🚀");
+  res.sendFile(path.join(__dirname, "../Frontend/tracklist.html"));
 });
 
 // Global Error Handler
