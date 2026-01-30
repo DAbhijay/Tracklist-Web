@@ -29,6 +29,7 @@ async function saveGroceries(groceries) {
 
 async function loadGroceries() {
   try {
+    console.log('🔄 Loading groceries from:', `${API_BASE}/groceries`);
     const res = await fetch(`${API_BASE}/groceries`, {
       method: 'GET',
       headers: {
@@ -36,17 +37,30 @@ async function loadGroceries() {
       },
     });
     
+    console.log('📡 Groceries API response status:', res.status, res.statusText);
+    
     if (!res.ok) {
       // If backend returns error, return empty array instead of throwing
-      console.warn(`Backend returned ${res.status}, using empty grocery list`);
+      console.error(`❌ Backend returned ${res.status}, using empty grocery list`);
+      const errorText = await res.text();
+      console.error('Error response:', errorText);
       return [];
     }
     
     const data = await res.json();
-    return Array.isArray(data) ? data : [];
+    console.log('✅ Groceries API returned data:', data);
+    console.log('📊 Number of items:', Array.isArray(data) ? data.length : 'Not an array');
+    
+    if (!Array.isArray(data)) {
+      console.error('❌ API did not return an array, got:', typeof data, data);
+      return [];
+    }
+    
+    return data;
   } catch (error) {
     // Network error or backend not running - return empty array
-    console.warn("Could not connect to backend, using empty grocery list:", error.message);
+    console.error("❌ Could not connect to backend, using empty grocery list:", error.message);
+    console.error('Full error:', error);
     return [];
   }
 }
@@ -69,6 +83,7 @@ async function saveTasks(tasks) {
 
 async function loadTasks() {
   try {
+    console.log('🔄 Loading tasks from:', `${API_BASE}/tasks`);
     const res = await fetch(`${API_BASE}/tasks`, {
       method: 'GET',
       headers: {
@@ -76,17 +91,30 @@ async function loadTasks() {
       },
     });
     
+    console.log('📡 Tasks API response status:', res.status, res.statusText);
+    
     if (!res.ok) {
       // If backend returns error, return empty array instead of throwing
-      console.warn(`Backend returned ${res.status}, using empty task list`);
+      console.error(`❌ Backend returned ${res.status}, using empty task list`);
+      const errorText = await res.text();
+      console.error('Error response:', errorText);
       return [];
     }
     
     const data = await res.json();
-    return Array.isArray(data) ? data : [];
+    console.log('✅ Tasks API returned data:', data);
+    console.log('📊 Number of items:', Array.isArray(data) ? data.length : 'Not an array');
+    
+    if (!Array.isArray(data)) {
+      console.error('❌ API did not return an array, got:', typeof data, data);
+      return [];
+    }
+    
+    return data;
   } catch (error) {
     // Network error or backend not running - return empty array
-    console.warn("Could not connect to backend, using empty task list:", error.message);
+    console.error("❌ Could not connect to backend, using empty task list:", error.message);
+    console.error('Full error:', error);
     return [];
   }
 }

@@ -7,7 +7,10 @@ window.tasks = tasks;
 // Initialize tasks from API
 (async function initTasks() {
   try {
+    console.log('🚀 Starting tasks initialization...');
     tasks = await loadTasks();
+    console.log('📦 Tasks loaded into variable:', tasks);
+    console.log('📦 Tasks length:', tasks?.length || 0);
     
     // Ensure tasks is an array
     if (!Array.isArray(tasks)) {

@@ -7,7 +7,10 @@ window.groceries = groceries;
 // Initialize groceries from API
 (async function initGroceries() {
   try {
+    console.log('🚀 Starting groceries initialization...');
     groceries = await loadGroceries();
+    console.log('📦 Groceries loaded into variable:', groceries);
+    console.log('📦 Groceries length:', groceries?.length || 0);
     
     // Migration - only if we got data
     if (Array.isArray(groceries)) {

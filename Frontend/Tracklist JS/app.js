@@ -55,7 +55,7 @@ function initResetButton() {
 
 function renderGroceries() {
   if (!groceryList) {
-    console.warn('renderGroceries: groceryList not found');
+    console.warn('⚠️ renderGroceries: groceryList not found');
     return;
   }
   
@@ -63,28 +63,37 @@ function renderGroceries() {
   // If groceries is not accessible, try to get it from window or reload
   let groceriesToRender = typeof groceries !== 'undefined' ? groceries : (window.groceries || []);
   
+  console.log('🔍 renderGroceries: Checking data sources...');
+  console.log('  - typeof groceries:', typeof groceries);
+  console.log('  - groceries value:', groceries);
+  console.log('  - window.groceries:', window.groceries);
+  console.log('  - groceriesReady:', typeof groceriesReady !== 'undefined' ? groceriesReady : 'undefined');
+  console.log('  - groceriesToRender length:', groceriesToRender?.length || 0);
+  
   // If groceries is empty but we're on the groceries page, try reloading from window
   if (!groceriesToRender || !groceriesToRender.length) {
     // Check if data should be ready
     if (typeof groceriesReady !== 'undefined' && groceriesReady) {
-      console.warn('renderGroceries: groceries array is empty but groceriesReady is true, checking window.groceries');
+      console.warn('⚠️ renderGroceries: groceries array is empty but groceriesReady is true, checking window.groceries');
       // Try to reload from the global scope
       if (window.groceries && Array.isArray(window.groceries) && window.groceries.length > 0) {
-        console.log('renderGroceries: Found groceries in window.groceries, using that');
+        console.log('✅ renderGroceries: Found groceries in window.groceries, using that');
         groceriesToRender = window.groceries;
         // Also update the local variable if it exists
         if (typeof groceries !== 'undefined') {
           groceries = window.groceries;
         }
       } else {
-        console.warn('renderGroceries: window.groceries is also empty, data may not have loaded yet');
+        console.error('❌ renderGroceries: window.groceries is also empty or not an array');
+        console.error('   window.groceries type:', typeof window.groceries);
+        console.error('   window.groceries value:', window.groceries);
       }
     } else {
-      console.log('renderGroceries: groceriesReady is false, data still loading');
+      console.log('⏳ renderGroceries: groceriesReady is false, data still loading');
     }
   }
   
-  console.log('renderGroceries: rendering', groceriesToRender?.length || 0, 'items');
+  console.log('🎨 renderGroceries: About to render', groceriesToRender?.length || 0, 'items');
   
   groceryList.innerHTML = "";
 
@@ -218,7 +227,7 @@ function renderGroceries() {
 
 function renderTasks() {
   if (!taskList) {
-    console.warn('renderTasks: taskList not found');
+    console.warn('⚠️ renderTasks: taskList not found');
     return;
   }
   
@@ -226,28 +235,37 @@ function renderTasks() {
   // If tasks is not accessible, try to get it from window or reload
   let tasksToRender = typeof tasks !== 'undefined' ? tasks : (window.tasks || []);
   
+  console.log('🔍 renderTasks: Checking data sources...');
+  console.log('  - typeof tasks:', typeof tasks);
+  console.log('  - tasks value:', tasks);
+  console.log('  - window.tasks:', window.tasks);
+  console.log('  - tasksReady:', typeof tasksReady !== 'undefined' ? tasksReady : 'undefined');
+  console.log('  - tasksToRender length:', tasksToRender?.length || 0);
+  
   // If tasks is empty but we're on the tasks page, try reloading from window
   if (!tasksToRender || !tasksToRender.length) {
     // Check if data should be ready
     if (typeof tasksReady !== 'undefined' && tasksReady) {
-      console.warn('renderTasks: tasks array is empty but tasksReady is true, checking window.tasks');
+      console.warn('⚠️ renderTasks: tasks array is empty but tasksReady is true, checking window.tasks');
       // Try to reload from the global scope
       if (window.tasks && Array.isArray(window.tasks) && window.tasks.length > 0) {
-        console.log('renderTasks: Found tasks in window.tasks, using that');
+        console.log('✅ renderTasks: Found tasks in window.tasks, using that');
         tasksToRender = window.tasks;
         // Also update the local variable if it exists
         if (typeof tasks !== 'undefined') {
           tasks = window.tasks;
         }
       } else {
-        console.warn('renderTasks: window.tasks is also empty, data may not have loaded yet');
+        console.error('❌ renderTasks: window.tasks is also empty or not an array');
+        console.error('   window.tasks type:', typeof window.tasks);
+        console.error('   window.tasks value:', window.tasks);
       }
     } else {
-      console.log('renderTasks: tasksReady is false, data still loading');
+      console.log('⏳ renderTasks: tasksReady is false, data still loading');
     }
   }
   
-  console.log('renderTasks: rendering', tasksToRender?.length || 0, 'items');
+  console.log('🎨 renderTasks: About to render', tasksToRender?.length || 0, 'items');
   
   taskList.innerHTML = "";
 
