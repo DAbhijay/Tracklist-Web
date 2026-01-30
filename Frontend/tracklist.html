@@ -7,12 +7,14 @@
     <title>Tracklist Web</title>
 
     <link rel="stylesheet" href="tracklist.css" />
-    <script src="utilities.js"></script>      <!-- 1st -->
-    <script src="storage.js"></script>        <!-- 2nd -->
-    <script src="groceries.js"></script>      <!-- 3rd -->
-    <script src="tasks.js"></script>          <!-- 4th -->
-    <script src="app.js"></script>            <!-- 5th -->
-    <script src="navigation.js"></script>     <!-- Last -->
+    <!-- Load scripts in correct order -->
+    <script src="utilities.js"></script>      <!-- 1st: Helper functions -->
+    <script src="storage.js"></script>        <!-- 2nd: API functions -->
+    <script src="groceries.js"></script>      <!-- 3rd: Groceries data -->
+    <script src="tasks.js"></script>          <!-- 4th: Tasks data -->
+    <script src="app.js"></script>            <!-- 5th: UI rendering -->
+    <script src="export.js"></script>         <!-- 6th: Export/Import -->
+    <script src="navigation.js"></script>     <!-- Last: Navigation -->
   </head>
 
   <body>
@@ -36,6 +38,7 @@
       <button type="button" class="nav-btn" data-page="tasks">
         <span>✓</span> Tasks
       </button>
+      <!-- Export/Import buttons will be added here by export.js -->
     </nav>
 
     <main class="app-container">
