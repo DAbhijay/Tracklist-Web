@@ -57,7 +57,7 @@ let groceriesReady = false;
 
 async function addGrocery(name) {
   try {
-    const res = await fetch("http://localhost:3000/api/groceries", {
+    const res = await fetch("/api/groceries", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -97,7 +97,7 @@ async function togglePurchase(grocery, isChecked) {
   try {
     if (isChecked) {
 
-      const res = await fetch(`http://localhost:3000/api/groceries/${encodeURIComponent(grocery.name)}/purchase`, {
+      const res = await fetch(`/api/groceries/${encodeURIComponent(grocery.name)}/purchase`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -127,7 +127,7 @@ async function togglePurchase(grocery, isChecked) {
       if (purchaseIndex !== -1) {
         grocery.purchases.splice(purchaseIndex, 1);
         
-        const res = await fetch(`http://localhost:3000/api/groceries/${encodeURIComponent(grocery.name)}`, {
+        const res = await fetch(`/api/groceries/${encodeURIComponent(grocery.name)}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
@@ -175,7 +175,7 @@ async function toggleHistory(grocery) {
   grocery.expanded = !grocery.expanded;
   
   try {
-    const res = await fetch(`http://localhost:3000/api/groceries/${encodeURIComponent(grocery.name)}`, {
+    const res = await fetch(`/api/groceries/${encodeURIComponent(grocery.name)}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -206,7 +206,7 @@ async function resetGroceries() {
     setLoading(resetBtn, true);
   }
   try {
-    const res = await fetch("http://localhost:3000/api/groceries", {
+    const res = await fetch("/api/groceries", {
       method: "DELETE",
     });
 
@@ -237,7 +237,7 @@ async function deleteGrocery(index) {
   if (!grocery) return;
 
   try {
-    const res = await fetch(`http://localhost:3000/api/groceries/${encodeURIComponent(grocery.name)}`, {
+    const res = await fetch(`/api/groceries/${encodeURIComponent(grocery.name)}`, {
       method: "DELETE",
     });
 
