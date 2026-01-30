@@ -829,3 +829,30 @@ button.loading .btn-spinner {
   outline-offset: 2px;
   border-radius: 4px;
 }
+
+
+/* ====================
+  Delete Button 
+  ================== */
+
+  #grocery-items li {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  gap: 1rem;
+  align-items: center;
+}
+
+.delete-btn {
+  background: transparent;
+  border: none;
+  color: #ef4444;
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.delete-btn:hover {
+  background: rgba(239, 68, 68, 0.1);
+}
