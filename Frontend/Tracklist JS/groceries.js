@@ -77,6 +77,11 @@ async function addGrocery(name) {
       groceries.push(newItem);
     }
     
+    // Re-render the UI immediately
+    if (typeof renderGroceries === 'function') {
+      renderGroceries();
+    }
+    
     if (typeof showToast !== 'undefined') {
       showToast(`Added "${name}" to grocery list`, "success");
     }
@@ -114,6 +119,11 @@ async function togglePurchase(grocery, isChecked) {
         groceries[index] = updatedItem;
       }
       
+      // Re-render the UI immediately
+      if (typeof renderGroceries === 'function') {
+        renderGroceries();
+      }
+      
       if (typeof showToast !== 'undefined') {
         showToast(`Marked "${grocery.name}" as purchased`, "success");
       }
@@ -145,6 +155,11 @@ async function togglePurchase(grocery, isChecked) {
           groceries[index] = updatedItem;
         }
         
+        // Re-render the UI immediately
+        if (typeof renderGroceries === 'function') {
+          renderGroceries();
+        }
+        
         if (typeof showToast !== 'undefined') {
           showToast(`Unmarked "${grocery.name}"`, "info");
         }
@@ -168,6 +183,11 @@ async function togglePurchase(grocery, isChecked) {
       }
     }
     await saveGroceries(groceries);
+    
+    // Re-render even on error
+    if (typeof renderGroceries === 'function') {
+      renderGroceries();
+    }
   }
 }
 
@@ -192,9 +212,19 @@ async function toggleHistory(grocery) {
     if (index !== -1) {
       groceries[index] = updatedItem;
     }
+    
+    // Re-render the UI immediately
+    if (typeof renderGroceries === 'function') {
+      renderGroceries();
+    }
   } catch (error) {
     console.error("Error toggling history:", error);
     await saveGroceries(groceries);
+    
+    // Re-render even on error
+    if (typeof renderGroceries === 'function') {
+      renderGroceries();
+    }
   }
 }
 
@@ -215,6 +245,12 @@ async function resetGroceries() {
     }
 
     groceries = [];
+    
+    // Re-render the UI immediately
+    if (typeof renderGroceries === 'function') {
+      renderGroceries();
+    }
+    
     if (typeof showToast !== 'undefined') {
       showToast("Grocery list reset successfully", "success");
     }
@@ -225,6 +261,11 @@ async function resetGroceries() {
     }
     groceries = [];
     await saveGroceries(groceries);
+    
+    // Re-render even on error
+    if (typeof renderGroceries === 'function') {
+      renderGroceries();
+    }
   } finally {
     if (resetBtn && typeof setLoading !== 'undefined') {
       setLoading(resetBtn, false);
@@ -252,6 +293,11 @@ async function deleteGrocery(index) {
       groceries.splice(index, 1);
     }
 
+    // Re-render the UI immediately
+    if (typeof renderGroceries === 'function') {
+      renderGroceries();
+    }
+    
     if (typeof showToast !== 'undefined') {
       showToast(`Deleted "${grocery.name}"`, "success");
     }
@@ -262,6 +308,11 @@ async function deleteGrocery(index) {
     }
     groceries.splice(index, 1);
     await saveGroceries(groceries);
+    
+    // Re-render even on error
+    if (typeof renderGroceries === 'function') {
+      renderGroceries();
+    }
   }
 }
 

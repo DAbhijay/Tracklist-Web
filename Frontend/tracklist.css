@@ -385,7 +385,7 @@ body {
 }
 
 /* ====================
-   Items List
+   Items List (Generic)
 ==================== */
 
 .items-list {
@@ -416,10 +416,6 @@ body {
   accent-color: var(--primary-green);
 }
 
-#task-items input[type="checkbox"] {
-  accent-color: var(--primary-blue);
-}
-
 .items-list span {
   flex: 1;
   font-size: 1rem;
@@ -448,23 +444,56 @@ body {
 }
 
 /* ====================
-   Grocery Specific
+   Grocery Specific Styles
 ==================== */
 
 #grocery-items li {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto 1fr auto auto;
   gap: 1rem;
   align-items: center;
 }
 
-#grocery-items span {
-  cursor: pointer;
-  font-weight: 500;
+/* Grocery item base */
+.grocery-item {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  border-bottom: 1px solid var(--border-color);
+  transition: background-color 0.2s;
 }
 
-#grocery-items span:hover {
+.grocery-item:hover {
+  background-color: var(--bg-primary);
+}
+
+/* Checkbox */
+.grocery-checkbox {
+  width: 20px;
+  height: 20px;
+  margin-right: 12px;
+  cursor: pointer;
+  accent-color: var(--primary-green);
+}
+
+/* Grocery name */
+.grocery-name {
+  flex: 1;
+  font-size: 16px;
+  font-weight: 500;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.grocery-name:hover {
   color: var(--primary-green);
+}
+
+/* Line-through style for purchased items */
+.grocery-item.purchased .grocery-name {
+  text-decoration: line-through;
+  color: #9ca3af;
+  opacity: 0.7;
 }
 
 #grocery-items input[type="checkbox"]:disabled {
@@ -477,10 +506,59 @@ body {
   text-decoration: line-through;
 }
 
+/* Purchase count badge */
+.purchase-count {
+  font-size: 12px;
+  color: #6b7280;
+  margin-left: 8px;
+  padding: 2px 8px;
+  background-color: #f3f4f6;
+  border-radius: 12px;
+}
+
+/* History toggle button */
+.history-toggle-btn {
+  padding: 4px 8px;
+  background-color: #dbeafe;
+  color: #2563eb;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  margin-left: 8px;
+  transition: background-color 0.2s;
+}
+
+.history-toggle-btn:hover {
+  background-color: #bfdbfe;
+}
+
+/* Delete button for groceries */
+.delete-grocery-btn,
+.delete-btn {
+  padding: 4px 8px;
+  background-color: #fee2e2;
+  color: #dc2626;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-left: 8px;
+  transition: background-color 0.2s;
+}
+
+.delete-grocery-btn:hover,
+.delete-btn:hover {
+  background-color: #fecaca;
+}
+
+/* Purchase history */
 .purchase-history {
-  grid-column: 2 / -1;
-  padding-left: 1.5rem;
-  margin-top: 0.75rem;
+  grid-column: 1 / -1;
+  padding-left: 32px;
+  margin-top: 8px;
+  font-size: 14px;
+  color: #6b7280;
   max-height: 0;
   opacity: 0;
   overflow: hidden;
@@ -492,7 +570,8 @@ li.expanded .purchase-history {
   opacity: 1;
 }
 
-.purchase-history li {
+.purchase-history li,
+.purchase-history-item {
   font-size: 0.875rem;
   color: var(--text-secondary);
   list-style: disc;
@@ -504,9 +583,19 @@ li.expanded .purchase-history {
   background: transparent;
 }
 
+.no-purchase-history {
+  font-style: italic;
+  color: #9ca3af;
+  list-style: none;
+}
+
 /* ====================
-   Task Specific
+   Task Specific Styles
 ==================== */
+
+#task-items input[type="checkbox"] {
+  accent-color: var(--primary-blue);
+}
 
 .task-overdue span {
   color: var(--error);
@@ -709,6 +798,16 @@ button.loading .btn-spinner {
 }
 
 /* ====================
+   Focus Styles
+==================== */
+
+:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ====================
    Mobile Responsive
 ==================== */
 
@@ -818,41 +917,4 @@ button.loading .btn-spinner {
   .list-card {
     padding: 1rem;
   }
-}
-
-/* ====================
-   Focus Styles
-==================== */
-
-:focus-visible {
-  outline: 2px solid var(--border-focus);
-  outline-offset: 2px;
-  border-radius: 4px;
-}
-
-
-/* ====================
-  Delete Button 
-  ================== */
-
-  #grocery-items li {
-  display: grid;
-  grid-template-columns: auto 1fr auto auto;
-  gap: 1rem;
-  align-items: center;
-}
-
-.delete-btn {
-  background: transparent;
-  border: none;
-  color: #ef4444;
-  font-size: 1.25rem;
-  cursor: pointer;
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  transition: all 0.2s ease;
-}
-
-.delete-btn:hover {
-  background: rgba(239, 68, 68, 0.1);
 }

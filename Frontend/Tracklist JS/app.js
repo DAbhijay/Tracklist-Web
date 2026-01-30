@@ -63,16 +63,30 @@ function renderGroceries() {
     return;
   }
 
-  groceries.forEach(item => {
+  const today = new Date().toISOString().split('T')[0];
+
+  groceries.forEach((item, index) => {
     const li = document.createElement("li");
     li.classList.toggle("expanded", item.expanded);
+    
+    // Check if purchased today
+    const purchasedToday = item.purchases.some(date => {
+      const purchaseDate = new Date(date).toISOString().split('T')[0];
+      return purchaseDate === today;
+    });
+    
+    // Add purchased class for styling
+    if (purchasedToday) {
+      li.classList.add("purchased");
+    }
 
     const checkbox = document.createElement("input");
     checkbox.type = "checkbox";
-    checkbox.checked = boughtToday(item.purchases);
-    checkbox.disabled = checkbox.checked;
+    checkbox.className = "grocery-checkbox";
+    checkbox.checked = purchasedToday;
 
     const name = document.createElement("span");
+    name.className = "grocery-name";
     name.textContent = item.name;
     name.tabIndex = 0;
     name.setAttribute("role", "button");
@@ -91,17 +105,44 @@ function renderGroceries() {
       renderGroceries();
     });
 
+    // Info section with purchase count
+    const infoContainer = document.createElement("div");
+    infoContainer.style.display = "flex";
+    infoContainer.style.alignItems = "center";
+    infoContainer.style.gap = "8px";
+
     const info = document.createElement("small");
     info.textContent = item.purchases.length
       ? `Last bought: ${formatDateRelative(item.purchases.at(-1))}`
       : "No purchase history yet";
 
+    if (item.purchases.length > 0) {
+      const badge = document.createElement("span");
+      badge.className = "purchase-count";
+      badge.textContent = `${item.purchases.length} purchase${item.purchases.length > 1 ? 's' : ''}`;
+      infoContainer.appendChild(badge);
+    }
+
     checkbox.addEventListener("change", async () => {
-      await recordPurchase(item);
+      await togglePurchase(item, checkbox.checked);
       renderGroceries();
     });
 
-    li.append(checkbox, name, info);
+    // Delete button
+    const deleteBtn = document.createElement("button");
+    deleteBtn.type = "button";
+    deleteBtn.className = "delete-grocery-btn";
+    deleteBtn.textContent = "Delete";
+    deleteBtn.addEventListener("click", async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (confirm(`Delete "${item.name}" from your grocery list?`)) {
+        await deleteGrocery(index);
+        renderGroceries();
+      }
+    });
+
+    li.append(checkbox, name, info, infoContainer, deleteBtn);
 
     if (item.expanded && item.purchases.length) {
       const history = document.createElement("ul");
@@ -109,6 +150,7 @@ function renderGroceries() {
 
       [...item.purchases].reverse().forEach(d => {
         const h = document.createElement("li");
+        h.className = "purchase-history-item";
         h.textContent = formatDateFull(d);
         history.appendChild(h);
       });
@@ -149,17 +191,16 @@ function renderTasks() {
       li.classList.add("task-overdue");
     }
 
+    if (task.completed) {
+      li.classList.add("completed");
+    }
+
     const checkbox = document.createElement("input");
     checkbox.type = "checkbox";
     checkbox.checked = task.completed;
 
     const span = document.createElement("span");
     span.textContent = task.name;
-
-    if (task.completed) {
-      span.style.textDecoration = "line-through";
-      span.style.opacity = "0.6";
-    }
 
     const meta = document.createElement("small");
     if (task.dueDate) {
@@ -324,6 +365,7 @@ if (document.readyState === 'loading') {
   }
 }
 
+// Keyboard shortcuts
 document.addEventListener('keydown', (e) => {
   // Alt+G for Groceries, Alt+T for Tasks, Alt+H for Home
   if (e.altKey && !e.ctrlKey && !e.metaKey) {
