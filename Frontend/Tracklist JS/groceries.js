@@ -59,16 +59,24 @@ window.groceries = groceries;
     
     console.log('Groceries loaded:', groceries.length, 'items');
     
-    // Render if we're on the groceries page - check multiple ways
+    // Render if we're on the groceries page - check multiple ways including localStorage
     const isOnGroceriesPage = (typeof getCurrentPage === 'function' && getCurrentPage() === 'groceries') ||
                               window.location.hash === '#groceries' ||
-                              document.querySelector('#groceries-page.active');
+                              document.querySelector('#groceries-page.active') ||
+                              (typeof localStorage !== 'undefined' && localStorage.getItem('lastActivePage') === 'groceries');
     
     if (isOnGroceriesPage && typeof renderGroceries === 'function') {
-      // Small delay to ensure DOM is ready
+      console.log('Groceries loaded, rendering because we\'re on groceries page');
+      // Small delay to ensure DOM is ready, then render
       setTimeout(() => {
         renderGroceries();
-      }, 100);
+        // Also ensure the page is shown if we detected it from localStorage
+        if (typeof showPage === 'function' && !document.querySelector('#groceries-page.active')) {
+          showPage('groceries', true);
+        }
+      }, 150);
+    } else {
+      console.log('Groceries loaded but not on groceries page, skipping render');
     }
   } catch (error) {
     console.warn("Error loading groceries (using empty list):", error.message);
@@ -83,16 +91,22 @@ window.groceries = groceries;
     // Dispatch custom event
     window.dispatchEvent(new CustomEvent('groceriesReady', { detail: groceries }));
     
-    // Render if we're on the groceries page - check multiple ways
+    // Render if we're on the groceries page - check multiple ways including localStorage
     const isOnGroceriesPage = (typeof getCurrentPage === 'function' && getCurrentPage() === 'groceries') ||
                               window.location.hash === '#groceries' ||
-                              document.querySelector('#groceries-page.active');
+                              document.querySelector('#groceries-page.active') ||
+                              (typeof localStorage !== 'undefined' && localStorage.getItem('lastActivePage') === 'groceries');
     
     if (isOnGroceriesPage && typeof renderGroceries === 'function') {
-      // Small delay to ensure DOM is ready
+      console.log('Groceries loaded (error case), rendering because we\'re on groceries page');
+      // Small delay to ensure DOM is ready, then render
       setTimeout(() => {
         renderGroceries();
-      }, 100);
+        // Also ensure the page is shown if we detected it from localStorage
+        if (typeof showPage === 'function' && !document.querySelector('#groceries-page.active')) {
+          showPage('groceries', true);
+        }
+      }, 150);
     }
   }
 })();

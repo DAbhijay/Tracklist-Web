@@ -48,16 +48,24 @@ window.tasks = tasks;
     
     console.log('Tasks loaded:', tasks.length, 'items');
     
-    // Render if we're on the tasks page - check multiple ways
+    // Render if we're on the tasks page - check multiple ways including localStorage
     const isOnTasksPage = (typeof getCurrentPage === 'function' && getCurrentPage() === 'tasks') ||
                           window.location.hash === '#tasks' ||
-                          document.querySelector('#tasks-page.active');
+                          document.querySelector('#tasks-page.active') ||
+                          (typeof localStorage !== 'undefined' && localStorage.getItem('lastActivePage') === 'tasks');
     
     if (isOnTasksPage && typeof renderTasks === 'function') {
-      // Small delay to ensure DOM is ready
+      console.log('Tasks loaded, rendering because we\'re on tasks page');
+      // Small delay to ensure DOM is ready, then render
       setTimeout(() => {
         renderTasks();
-      }, 100);
+        // Also ensure the page is shown if we detected it from localStorage
+        if (typeof showPage === 'function' && !document.querySelector('#tasks-page.active')) {
+          showPage('tasks', true);
+        }
+      }, 150);
+    } else {
+      console.log('Tasks loaded but not on tasks page, skipping render');
     }
   } catch (error) {
     console.warn("Error loading tasks (using empty list):", error.message);
@@ -73,16 +81,22 @@ window.tasks = tasks;
     // Dispatch custom event
     window.dispatchEvent(new CustomEvent('tasksReady', { detail: tasks }));
     
-    // Render if we're on the tasks page - check multiple ways
+    // Render if we're on the tasks page - check multiple ways including localStorage
     const isOnTasksPage = (typeof getCurrentPage === 'function' && getCurrentPage() === 'tasks') ||
                           window.location.hash === '#tasks' ||
-                          document.querySelector('#tasks-page.active');
+                          document.querySelector('#tasks-page.active') ||
+                          (typeof localStorage !== 'undefined' && localStorage.getItem('lastActivePage') === 'tasks');
     
     if (isOnTasksPage && typeof renderTasks === 'function') {
-      // Small delay to ensure DOM is ready
+      console.log('Tasks loaded (error case), rendering because we\'re on tasks page');
+      // Small delay to ensure DOM is ready, then render
       setTimeout(() => {
         renderTasks();
-      }, 100);
+        // Also ensure the page is shown if we detected it from localStorage
+        if (typeof showPage === 'function' && !document.querySelector('#tasks-page.active')) {
+          showPage('tasks', true);
+        }
+      }, 150);
     }
   }
 })();

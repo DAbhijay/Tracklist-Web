@@ -486,6 +486,64 @@ document.addEventListener('keydown', (e) => {
 window.onGroceriesReady = checkInit;
 window.onTasksReady = checkInit;
 
+// Aggressive rendering check - periodically check if we need to render
+// This handles cases where data loads but rendering didn't happen
+(function checkAndRenderPeriodically() {
+  // Check every 500ms for the first 5 seconds after page load
+  let checkCount = 0;
+  const maxChecks = 10; // 10 checks = 5 seconds
+  
+  const interval = setInterval(() => {
+    checkCount++;
+    
+    // Check groceries
+    if (typeof groceriesReady !== 'undefined' && groceriesReady && 
+        typeof window.groceries !== 'undefined' && 
+        Array.isArray(window.groceries) && 
+        window.groceries.length > 0) {
+      
+      const shouldRenderGroceries = 
+        (typeof getCurrentPage === 'function' && getCurrentPage() === 'groceries') ||
+        window.location.hash === '#groceries' ||
+        document.querySelector('#groceries-page.active') ||
+        (typeof localStorage !== 'undefined' && localStorage.getItem('lastActivePage') === 'groceries');
+      
+      if (shouldRenderGroceries && typeof renderGroceries === 'function') {
+        const list = document.getElementById('grocery-items');
+        if (list && (!list.children.length || list.querySelector('.empty-state'))) {
+          console.log('Periodic check: Rendering groceries that were missed');
+          renderGroceries();
+        }
+      }
+    }
+    
+    // Check tasks
+    if (typeof tasksReady !== 'undefined' && tasksReady && 
+        typeof window.tasks !== 'undefined' && 
+        Array.isArray(window.tasks) && 
+        window.tasks.length > 0) {
+      
+      const shouldRenderTasks = 
+        (typeof getCurrentPage === 'function' && getCurrentPage() === 'tasks') ||
+        window.location.hash === '#tasks' ||
+        document.querySelector('#tasks-page.active') ||
+        (typeof localStorage !== 'undefined' && localStorage.getItem('lastActivePage') === 'tasks');
+      
+      if (shouldRenderTasks && typeof renderTasks === 'function') {
+        const list = document.getElementById('task-items');
+        if (list && (!list.children.length || list.querySelector('.empty-state'))) {
+          console.log('Periodic check: Rendering tasks that were missed');
+          renderTasks();
+        }
+      }
+    }
+    
+    if (checkCount >= maxChecks) {
+      clearInterval(interval);
+    }
+  }, 500);
+})();
+
 setTimeout(() => {
   if (!initComplete) {
     console.warn('Initialization timeout - hiding loading overlay and forcing completion');
