@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login - Tracklist Web</title>
+    <link rel="stylesheet" href="tracklist.css" />
+    <style>
+      /* Login-specific styles */
+      .login-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 1rem;
+      }
+
+      .login-card {
+        background: white;
+        border-radius: 16px;
+        padding: 3rem 2.5rem;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        max-width: 400px;
+        width: 100%;
+        animation: slideUp 0.4s ease;
+      }
+
+      @keyframes slideUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .login-header {
+        text-align: center;
+        margin-bottom: 2rem;
+      }
+
+      .login-header h1 {
+        font-size: 2rem;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+      }
+
+      .login-header p {
+        color: var(--text-secondary);
+        font-size: 0.95rem;
+      }
+
+      .login-form {
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+      }
+
+      .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .form-group label {
+        font-weight: 600;
+        color: var(--text-primary);
+        font-size: 0.9rem;
+      }
+
+      .form-group input {
+        padding: 0.875rem 1rem;
+        border: 2px solid var(--border-color);
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: all 0.2s ease;
+      }
+
+      .form-group input:focus {
+        outline: none;
+        border-color: var(--primary-blue);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+      }
+
+      .login-btn {
+        padding: 1rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        margin-top: 0.5rem;
+      }
+
+      .login-btn:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+      }
+
+      .login-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      .demo-banner {
+        background: #f0f9ff;
+        border: 2px solid #3b82f6;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-top: 1.5rem;
+        text-align: center;
+      }
+
+      .demo-banner p {
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .demo-banner strong {
+        color: var(--primary-blue);
+        font-weight: 600;
+      }
+
+      .demo-btn {
+        background: transparent;
+        color: var(--primary-blue);
+        border: 2px solid var(--primary-blue);
+        padding: 0.625rem 1.25rem;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        margin-top: 0.5rem;
+      }
+
+      .demo-btn:hover {
+        background: var(--primary-blue);
+        color: white;
+      }
+
+      .error-message {
+        background: #fee;
+        border: 2px solid var(--error);
+        color: var(--error);
+        padding: 0.875rem;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        text-align: center;
+        display: none;
+      }
+
+      .error-message.show {
+        display: block;
+        animation: shake 0.4s ease;
+      }
+
+      @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-10px); }
+        75% { transform: translateX(10px); }
+      }
+
+      .login-footer {
+        text-align: center;
+        margin-top: 2rem;
+        color: var(--text-muted);
+        font-size: 0.85rem;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Portfolio Demo Banner -->
+    <div id="portfolio-banner" style="
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      text-align: center;
+      padding: 1rem;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    ">
+      <p style="margin: 0 0 0.5rem 0; font-size: 0.9rem; opacity: 0.95;">
+        👋 Viewing from my portfolio? 
+      </p>
+      <button id="auto-demo-btn" style="
+        background: white;
+        color: #667eea;
+        border: none;
+        padding: 0.75rem 2rem;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        transition: all 0.2s ease;
+      " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(0,0,0,0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(0,0,0,0.2)'">
+        🚀 Launch Demo - No Login Required
+      </button>
+      <p style="margin: 0.75rem 0 0 0; font-size: 0.8rem; opacity: 0.85;">
+        Or scroll down to login with your own account
+      </p>
+    </div>
+
+    <div class="login-container">
+      <div class="login-card">
+        <div class="login-header">
+          <h1>🎯 Tracklist</h1>
+          <p>Sign in to manage your lists</p>
+        </div>
+
+        <div id="error-message" class="error-message"></div>
+
+        <form id="login-form" class="login-form">
+          <div class="form-group">
+            <label for="username">Username</label>
+            <input
+              type="text"
+              id="username"
+              name="username"
+              placeholder="Enter your username"
+              required
+              autocomplete="username"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              placeholder="Enter your password"
+              required
+              autocomplete="current-password"
+            />
+          </div>
+
+          <button type="submit" class="login-btn" id="login-btn">
+            <span class="btn-text">Sign In</span>
+            <span class="btn-spinner" style="display: none;">⏳ Signing in...</span>
+          </button>
+        </form>
+
+        <div class="demo-banner">
+          <p>Want to try it out first?</p>
+          <button type="button" class="demo-btn" id="demo-btn">
+            Try Demo Mode
+          </button>
+          <p style="margin-top: 0.75rem; font-size: 0.8rem;">
+            <strong>Demo credentials:</strong> demo / demo123
+          </p>
+        </div>
+
+        <div class="login-footer">
+          Made with ❤️ for organized living
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const loginForm = document.getElementById('login-form');
+      const loginBtn = document.getElementById('login-btn');
+      const demoBtn = document.getElementById('demo-btn');
+      const autoDemoBtn = document.getElementById('auto-demo-btn');
+      const errorMessage = document.getElementById('error-message');
+      const usernameInput = document.getElementById('username');
+      const passwordInput = document.getElementById('password');
+
+      // Check for auto-demo URL parameter
+      const urlParams = new URLSearchParams(window.location.search);
+      const autoDemo = urlParams.get('demo');
+      
+      if (autoDemo === 'true' || autoDemo === '1') {
+        // Auto-login to demo mode from URL parameter
+        console.log('Auto-demo mode activated from URL');
+        if (autoDemoBtn) {
+          autoDemoBtn.textContent = '🚀 Launching demo...';
+          autoDemoBtn.disabled = true;
+        }
+        // Small delay to show the button state change
+        setTimeout(() => {
+          handleLogin('demo', 'demo123');
+        }, 500);
+      }
+
+      // Check if already logged in
+      const token = localStorage.getItem('auth_token');
+      if (token) {
+        // Verify token is still valid
+        fetch('/api/auth/verify', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.valid) {
+            // Token is valid, redirect to app
+            window.location.href = '/tracklist.html';
+          } else {
+            // Token invalid, clear it
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('username');
+            localStorage.removeItem('isDemo');
+          }
+        })
+        .catch(err => {
+          console.error('Token verification failed:', err);
+        });
+      }
+
+      function showError(message) {
+        errorMessage.textContent = message;
+        errorMessage.classList.add('show');
+        setTimeout(() => {
+          errorMessage.classList.remove('show');
+        }, 5000);
+      }
+
+      function setLoading(isLoading) {
+        if (isLoading) {
+          loginBtn.disabled = true;
+          loginBtn.classList.add('loading');
+          loginBtn.querySelector('.btn-text').style.display = 'none';
+          loginBtn.querySelector('.btn-spinner').style.display = 'inline';
+        } else {
+          loginBtn.disabled = false;
+          loginBtn.classList.remove('loading');
+          loginBtn.querySelector('.btn-text').style.display = 'inline';
+          loginBtn.querySelector('.btn-spinner').style.display = 'none';
+        }
+      }
+
+      async function handleLogin(username, password) {
+        setLoading(true);
+
+        try {
+          const response = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ username, password })
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            // Store token and user info
+            localStorage.setItem('auth_token', data.token);
+            localStorage.setItem('username', data.user.username);
+            localStorage.setItem('isDemo', data.user.isDemo);
+
+            // Redirect to main app
+            window.location.href = '/tracklist.html';
+          } else {
+            showError(data.error || 'Login failed. Please try again.');
+          }
+        } catch (error) {
+          console.error('Login error:', error);
+          showError('Connection error. Please check your internet and try again.');
+        } finally {
+          setLoading(false);
+        }
+      }
+
+      loginForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const username = usernameInput.value.trim();
+        const password = passwordInput.value;
+
+        if (!username || !password) {
+          showError('Please enter both username and password');
+          return;
+        }
+
+        handleLogin(username, password);
+      });
+
+      demoBtn.addEventListener('click', () => {
+        usernameInput.value = 'demo';
+        passwordInput.value = 'demo123';
+        handleLogin('demo', 'demo123');
+      });
+
+      // Auto-demo button (for portfolio visitors)
+      if (autoDemoBtn) {
+        autoDemoBtn.addEventListener('click', () => {
+          // Show loading state
+          autoDemoBtn.disabled = true;
+          autoDemoBtn.textContent = '🚀 Launching demo...';
+          
+          // Auto-login as demo
+          handleLogin('demo', 'demo123');
+        });
+      }
+
+      // Focus username input on load
+      usernameInput.focus();
+    </script>
+  </body>
+</html>

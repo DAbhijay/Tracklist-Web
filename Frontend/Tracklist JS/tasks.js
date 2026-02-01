@@ -4,38 +4,8 @@ let tasksReady = false;
 // Make tasks accessible globally
 window.tasks = tasks;
 
-// Load tasks from API
-async function loadTasks() {
-  try {
-    const res = await fetch("/api/tasks");
-    if (!res.ok) {
-      throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-    }
-    const data = await res.json();
-    return Array.isArray(data) ? data : [];
-  } catch (error) {
-    console.error("Error loading tasks:", error);
-    return []; // Return empty array on error
-  }
-}
-
-// Save tasks to API
-async function saveTasks(tasksData) {
-  try {
-    const res = await fetch("/api/tasks", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(tasksData),
-    });
-    if (!res.ok) {
-      throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-    }
-    return await res.json();
-  } catch (error) {
-    console.error("Error saving tasks:", error);
-    throw error;
-  }
-}
+// Load tasks from API (now uses auth)
+// Note: loadTasks is defined in storage.js and uses auth headers
 
 // Initialize tasks from API
 (async function initTasks() {
@@ -131,13 +101,18 @@ async function addTask(name, dueDate) {
   try {
     const res = await fetch("/api/tasks", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
       body: JSON.stringify({ 
         name, 
         dueDate: dueDate || null,
         completed: false
       }),
     });
+
+    if (res.status === 401 || res.status === 403) {
+      handleUnauthorized();
+      throw new Error('Unauthorized');
+    }
 
     if (!res.ok) {
       const error = await res.json();
@@ -180,9 +155,14 @@ async function toggleTask(task) {
   try {
     const res = await fetch(`/api/tasks/${task.id}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
       body: JSON.stringify({ completed: task.completed }),
     });
+
+    if (res.status === 401 || res.status === 403) {
+      handleUnauthorized();
+      throw new Error('Unauthorized');
+    }
 
     if (!res.ok) {
       throw new Error("Failed to update task");
@@ -240,7 +220,13 @@ async function deleteTask(index) {
     if (task.id) {
       const res = await fetch(`/api/tasks/${task.id}`, {
         method: "DELETE",
+        headers: getAuthHeaders(),
       });
+
+      if (res.status === 401 || res.status === 403) {
+        handleUnauthorized();
+        throw new Error('Unauthorized');
+      }
 
       if (!res.ok) {
         throw new Error("Failed to delete task");

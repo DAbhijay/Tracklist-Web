@@ -1,23 +1,32 @@
 const express = require("express");
 const groceriesStore = require("../data/groceries.store");
+const { authenticateToken, isDemoUser } = require("../middleware/auth");
 
 const router = express.Router();
 
-// GET all groceries
+// Apply authentication to all routes
+router.use(authenticateToken);
+
+// GET all groceries for authenticated user
 router.get("/", (req, res) => {
-  const groceries = groceriesStore.getAll();
+  const groceries = groceriesStore.getAll(req.user.username);
   res.json(groceries);
 });
 
-// ADD grocery
+// ADD grocery (demo users have read-only restrictions)
 router.post("/", (req, res) => {
+  if (isDemoUser(req)) {
+    // Demo users can add, but data will be cleared periodically
+    console.log('Demo user adding grocery (temporary)');
+  }
+
   const { name } = req.body;
 
   if (!name) {
     return res.status(400).json({ error: "Name is required" });
   }
 
-  const item = groceriesStore.add(name);
+  const item = groceriesStore.add(req.user.username, name);
 
   if (!item) {
     return res.status(409).json({ error: "Item already exists" });
@@ -28,77 +37,69 @@ router.post("/", (req, res) => {
 
 // RECORD purchase
 router.post("/:name/purchase", (req, res) => {
-  const groceries = groceriesStore.getAll();
-  const item = groceries.find(
-    g => g.name.toLowerCase() === req.params.name.toLowerCase()
+  const item = groceriesStore.recordPurchase(
+    req.user.username, 
+    req.params.name
   );
 
   if (!item) {
     return res.status(404).json({ error: "Item not found" });
   }
-
-  item.purchases.push(new Date().toISOString());
-  groceriesStore.replaceAll(groceries);
 
   res.json(item);
 });
 
 // UPDATE grocery (for expanded state, name, etc.)
 router.put("/:name", (req, res) => {
-  const groceries = groceriesStore.getAll();
-  const item = groceries.find(
-    g => g.name.toLowerCase() === req.params.name.toLowerCase()
+  const item = groceriesStore.update(
+    req.user.username,
+    req.params.name,
+    req.body
   );
 
   if (!item) {
     return res.status(404).json({ error: "Item not found" });
   }
 
-  // Update allowed fields
-  if (req.body.expanded !== undefined) {
-    item.expanded = req.body.expanded;
-  }
-  if (req.body.name !== undefined) {
-    item.name = req.body.name;
-  }
-  if (req.body.purchases !== undefined) {
-    item.purchases = req.body.purchases;
-  }
-
-  groceriesStore.replaceAll(groceries);
   res.json(item);
 });
 
-// UPDATE all groceries (for bulk updates)
+// UPDATE all groceries (for bulk updates/imports)
 router.put("/", (req, res) => {
-  const { groceries: newGroceries } = req.body;
+  // This is typically used by the import feature
+  let newGroceries = req.body;
+  
+  // Handle both array directly and {groceries: [...]} format
+  if (!Array.isArray(newGroceries)) {
+    newGroceries = req.body.groceries;
+  }
   
   if (!Array.isArray(newGroceries)) {
     return res.status(400).json({ error: "Groceries must be an array" });
   }
 
-  groceriesStore.replaceAll(newGroceries);
+  groceriesStore.replaceAll(req.user.username, newGroceries);
   res.json(newGroceries);
 });
 
 // DELETE single grocery
 router.delete("/:name", (req, res) => {
-  const groceries = groceriesStore.getAll();
-  const filtered = groceries.filter(
-    g => g.name.toLowerCase() !== req.params.name.toLowerCase()
+  const success = groceriesStore.remove(
+    req.user.username,
+    req.params.name
   );
   
-  if (filtered.length === groceries.length) {
+  if (!success) {
     return res.status(404).json({ error: "Item not found" });
   }
   
-  groceriesStore.replaceAll(filtered);
-  res.json(filtered);
+  const remaining = groceriesStore.getAll(req.user.username);
+  res.json(remaining);
 });
 
-// RESET all groceries
+// RESET all groceries for user
 router.delete("/", (req, res) => {
-  groceriesStore.replaceAll([]);
+  groceriesStore.reset(req.user.username);
   res.json({ message: "Groceries reset" });
 });
 

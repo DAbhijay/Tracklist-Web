@@ -4,38 +4,8 @@ let groceriesReady = false;
 // Make groceries accessible globally
 window.groceries = groceries;
 
-// Load groceries from API
-async function loadGroceries() {
-  try {
-    const res = await fetch("/api/groceries");
-    if (!res.ok) {
-      throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-    }
-    const data = await res.json();
-    return Array.isArray(data) ? data : [];
-  } catch (error) {
-    console.error("Error loading groceries:", error);
-    return []; // Return empty array on error
-  }
-}
-
-// Save groceries to API
-async function saveGroceries(groceriesData) {
-  try {
-    const res = await fetch("/api/groceries", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(groceriesData),
-    });
-    if (!res.ok) {
-      throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-    }
-    return await res.json();
-  } catch (error) {
-    console.error("Error saving groceries:", error);
-    throw error;
-  }
-}
+// Load groceries from API (now uses auth)
+// Note: loadGroceries is defined in storage.js and uses auth headers
 
 // Initialize groceries from API
 (async function initGroceries() {
@@ -138,9 +108,14 @@ async function addGrocery(name) {
   try {
     const res = await fetch("/api/groceries", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
       body: JSON.stringify({ name }),
     });
+
+    if (res.status === 401 || res.status === 403) {
+      handleUnauthorized();
+      throw new Error('Unauthorized');
+    }
 
     if (!res.ok) {
       const error = await res.json();
@@ -181,8 +156,13 @@ async function togglePurchase(grocery, isChecked) {
     if (isChecked) {
       const res = await fetch(`/api/groceries/${encodeURIComponent(grocery.name)}/purchase`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders(),
       });
+
+      if (res.status === 401 || res.status === 403) {
+        handleUnauthorized();
+        throw new Error('Unauthorized');
+      }
 
       if (!res.ok) {
         throw new Error("Failed to record purchase");
@@ -209,9 +189,14 @@ async function togglePurchase(grocery, isChecked) {
         
         const res = await fetch(`/api/groceries/${encodeURIComponent(grocery.name)}`, {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          headers: getAuthHeaders(),
           body: JSON.stringify({ purchases: grocery.purchases }),
         });
+
+        if (res.status === 401 || res.status === 403) {
+          handleUnauthorized();
+          throw new Error('Unauthorized');
+        }
 
         if (!res.ok) {
           throw new Error("Failed to update grocery");
@@ -267,9 +252,14 @@ async function toggleHistory(grocery) {
   try {
     const res = await fetch(`/api/groceries/${encodeURIComponent(grocery.name)}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
       body: JSON.stringify({ expanded: grocery.expanded }),
     });
+
+    if (res.status === 401 || res.status === 403) {
+      handleUnauthorized();
+      throw new Error('Unauthorized');
+    }
 
     if (!res.ok) {
       throw new Error("Failed to update grocery");
@@ -304,7 +294,13 @@ async function resetGroceries() {
   try {
     const res = await fetch("/api/groceries", {
       method: "DELETE",
+      headers: getAuthHeaders(),
     });
+
+    if (res.status === 401 || res.status === 403) {
+      handleUnauthorized();
+      throw new Error('Unauthorized');
+    }
 
     if (!res.ok) {
       throw new Error("Failed to reset groceries");
@@ -347,7 +343,13 @@ async function deleteGrocery(index) {
   try {
     const res = await fetch(`/api/groceries/${encodeURIComponent(grocery.name)}`, {
       method: "DELETE",
+      headers: getAuthHeaders(),
     });
+
+    if (res.status === 401 || res.status === 403) {
+      handleUnauthorized();
+      throw new Error('Unauthorized');
+    }
 
     if (!res.ok) {
       throw new Error("Failed to delete grocery");

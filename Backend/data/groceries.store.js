@@ -1,6 +1,6 @@
 const db = require('../db/database');
 
-console.log('Groceries store initialized (using SQLite)');
+console.log('Groceries store initialized (using SQLite with user isolation)');
 
 // ----- Queries -----
 
@@ -12,13 +12,14 @@ const selectAllStmt = db.prepare(`
         GROUP_CONCAT(gp.purchased_at) as purchases
     FROM groceries g
     LEFT JOIN grocery_purchases gp ON g.id = gp.grocery_id
+    WHERE g.username = ?
     GROUP BY g.id, g.name, g.expanded
     ORDER BY g.name ASC
 `);
 
 const insertGroceryStmt = db.prepare(`
-    INSERT INTO groceries (name, expanded)
-    VALUES (@name, @expanded)
+    INSERT INTO groceries (username, name, expanded)
+    VALUES (@username, @name, @expanded)
 `);
 
 const insertPurchaseStmt = db.prepare(`
@@ -34,7 +35,7 @@ const findByNameStmt = db.prepare(`
         GROUP_CONCAT(gp.purchased_at) as purchases
     FROM groceries g
     LEFT JOIN grocery_purchases gp ON g.id = gp.grocery_id
-    WHERE LOWER(g.name) = LOWER(@name)
+    WHERE LOWER(g.name) = LOWER(@name) AND g.username = @username
     GROUP BY g.id, g.name, g.expanded
 `);
 
@@ -43,11 +44,11 @@ const updateGroceryStmt = db.prepare(`
     SET 
         name = COALESCE(@name, name),
         expanded = COALESCE(@expanded, expanded)
-    WHERE id = @id
+    WHERE id = @id AND username = @username
 `);
 
 const deleteGroceryStmt = db.prepare(`
-    DELETE FROM groceries WHERE id = @id
+    DELETE FROM groceries WHERE id = @id AND username = @username
 `);
 
 const deletePurchasesStmt = db.prepare(`
@@ -55,11 +56,12 @@ const deletePurchasesStmt = db.prepare(`
 `);
 
 const deleteAllGroceriesStmt = db.prepare(`
-    DELETE FROM groceries
+    DELETE FROM groceries WHERE username = ?
 `);
 
-const deleteAllPurchasesStmt = db.prepare(`
-    DELETE FROM grocery_purchases
+const deleteAllPurchasesForUserStmt = db.prepare(`
+    DELETE FROM grocery_purchases 
+    WHERE grocery_id IN (SELECT id FROM groceries WHERE username = ?)
 `);
 
 // ----- Helper Functions -----
@@ -75,24 +77,25 @@ function parseGroceryRow(row) {
     };
 }
 
-// ----- Public API -----
+// ----- Public API (now requires username) -----
 
-function getAll() {
-    const rows = selectAllStmt.all();
+function getAll(username) {
+    const rows = selectAllStmt.all(username);
     const groceries = rows.map(parseGroceryRow);
-    console.log(`Retrieved ${groceries.length} groceries from database`);
+    console.log(`Retrieved ${groceries.length} groceries for user: ${username}`);
     return groceries;
 }
 
-function add(name) {
-    // Check if already exists
-    const existing = findByNameStmt.get({ name });
+function add(username, name) {
+    // Check if already exists for this user
+    const existing = findByNameStmt.get({ name, username });
     if (existing) {
-        console.log(`Grocery "${name}" already exists`);
+        console.log(`Grocery "${name}" already exists for user: ${username}`);
         return null;
     }
 
     const result = insertGroceryStmt.run({
+        username,
         name,
         expanded: 0
     });
@@ -104,15 +107,15 @@ function add(name) {
         purchases: []
     };
 
-    console.log(`Added grocery: ${name}`);
+    console.log(`Added grocery: ${name} for user: ${username}`);
     return newGrocery;
 }
 
-function recordPurchase(name) {
-    const grocery = findByNameStmt.get({ name });
+function recordPurchase(username, name) {
+    const grocery = findByNameStmt.get({ name, username });
     
     if (!grocery) {
-        console.log(`Grocery "${name}" not found`);
+        console.log(`Grocery "${name}" not found for user: ${username}`);
         return null;
     }
 
@@ -123,18 +126,18 @@ function recordPurchase(name) {
         purchased_at: now
     });
 
-    console.log(`Recorded purchase for: ${name}`);
+    console.log(`Recorded purchase for: ${name} (user: ${username})`);
     
     // Return updated grocery
-    const updated = findByNameStmt.get({ name });
+    const updated = findByNameStmt.get({ name, username });
     return parseGroceryRow(updated);
 }
 
-function update(name, updates) {
-    const grocery = findByNameStmt.get({ name });
+function update(username, name, updates) {
+    const grocery = findByNameStmt.get({ name, username });
     
     if (!grocery) {
-        console.log(`Grocery "${name}" not found for update`);
+        console.log(`Grocery "${name}" not found for user: ${username}`);
         return null;
     }
 
@@ -160,26 +163,31 @@ function update(name, updates) {
     // Update other fields
     updateGroceryStmt.run({
         id: grocery.id,
+        username,
         name: updates.name !== undefined ? updates.name : null,
         expanded: updates.expanded !== undefined ? (updates.expanded ? 1 : 0) : null
     });
 
-    console.log(`Updated grocery: ${name}`);
+    console.log(`Updated grocery: ${name} for user: ${username}`);
     
     // Return updated grocery
-    const updated = findByNameStmt.get({ name: updates.name || name });
+    const updated = findByNameStmt.get({ 
+        name: updates.name || name, 
+        username 
+    });
     return parseGroceryRow(updated);
 }
 
-function replaceAll(newGroceries) {
+function replaceAll(username, newGroceries) {
     const transaction = db.transaction(() => {
-        // Clear existing data
-        deleteAllPurchasesStmt.run();
-        deleteAllGroceriesStmt.run();
+        // Clear existing data for this user
+        deleteAllPurchasesForUserStmt.run(username);
+        deleteAllGroceriesStmt.run(username);
         
         // Insert new data
         for (const grocery of newGroceries) {
             const result = insertGroceryStmt.run({
+                username,
                 name: grocery.name,
                 expanded: grocery.expanded ? 1 : 0
             });
@@ -199,37 +207,33 @@ function replaceAll(newGroceries) {
     });
     
     transaction();
-    console.log(`Replaced all groceries with ${newGroceries.length} items`);
+    console.log(`Replaced all groceries for user ${username} with ${newGroceries.length} items`);
     return newGroceries;
 }
 
-function reset() {
+function reset(username) {
     const transaction = db.transaction(() => {
-        deleteAllPurchasesStmt.run();
-        deleteAllGroceriesStmt.run();
+        deleteAllPurchasesForUserStmt.run(username);
+        deleteAllGroceriesStmt.run(username);
     });
     
     transaction();
-    console.log('Reset all groceries');
+    console.log(`Reset all groceries for user: ${username}`);
     return true;
 }
 
-function remove(name) {
-    const grocery = findByNameStmt.get({ name });
+function remove(username, name) {
+    const grocery = findByNameStmt.get({ name, username });
     
     if (!grocery) {
-        console.log(`Grocery "${name}" not found for deletion`);
+        console.log(`Grocery "${name}" not found for user: ${username}`);
         return false;
     }
 
-    deleteGroceryStmt.run({ id: grocery.id });
-    console.log(`Deleted grocery: ${name}`);
+    deleteGroceryStmt.run({ id: grocery.id, username });
+    console.log(`Deleted grocery: ${name} for user: ${username}`);
     return true;
 }
-
-// Log initial state
-const initialCount = getAll().length;
-console.log(`Groceries store ready with ${initialCount} items`);
 
 module.exports = {
     getAll,

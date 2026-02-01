@@ -39,7 +39,24 @@
         <span>✓</span> Tasks
       </button>
       <!-- Export/Import buttons will be added here by export.js -->
+      <!-- Logout button will be added here -->
+      <button type="button" class="nav-btn logout-btn" id="logout-btn" style="margin-left: auto;">
+        <span>🚪</span> Logout
+      </button>
     </nav>
+
+    <!-- User info banner (optional - shows current user) -->
+    <div id="user-banner" style="
+      background: #f0f9ff;
+      border-bottom: 1px solid #bfdbfe;
+      padding: 0.5rem 1rem;
+      text-align: center;
+      font-size: 0.875rem;
+      color: #1e40af;
+      display: none;
+    ">
+      <span id="user-info"></span>
+    </div>
 
     <main class="app-container">
       
@@ -146,5 +163,40 @@
       </section>
 
     </main>
+
+    <script>
+      // Initialize logout button
+      document.addEventListener('DOMContentLoaded', () => {
+        const logoutBtn = document.getElementById('logout-btn');
+        const userBanner = document.getElementById('user-banner');
+        const userInfo = document.getElementById('user-info');
+
+        if (logoutBtn && typeof logout === 'function') {
+          logoutBtn.addEventListener('click', () => {
+            if (confirm('Are you sure you want to logout?')) {
+              logout();
+            }
+          });
+        }
+
+        // Show user info if available
+        if (typeof getCurrentUsername === 'function' && typeof isDemo === 'function') {
+          const username = getCurrentUsername();
+          const isDemoUser = isDemo();
+          
+          if (username && userInfo && userBanner) {
+            if (isDemoUser) {
+              userInfo.textContent = `👤 Demo Mode - Your data is temporary and will be reset periodically`;
+              userBanner.style.background = '#fef3c7';
+              userBanner.style.borderColor = '#fbbf24';
+              userBanner.style.color = '#92400e';
+            } else {
+              userInfo.textContent = `👤 Logged in as ${username}`;
+            }
+            userBanner.style.display = 'block';
+          }
+        }
+      });
+    </script>
   </body>
 </html>

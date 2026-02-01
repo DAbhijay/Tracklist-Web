@@ -1,0 +1,32 @@
+{
+  "name": "tracklist-web",
+  "version": "2.0.0",
+  "description": "A web-based grocery and task tracking application with authentication",
+  "main": "Backend/server.js",
+  "scripts": {
+       "start": "node Backend/server.js",
+       "dev": "nodemon Backend/server.js",
+       "create-user": "node Backend/scripts/create-user.js"
+     },
+  "keywords": [
+    "grocery",
+    "tasks",
+    "tracking",
+    "sqlite"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+       "express": "^4.18.2",
+       "cors": "^2.8.5",
+       "better-sqlite3": "^9.2.2",
+       "bcryptjs": "^2.4.3",
+       "jsonwebtoken": "^9.0.2"
+     },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
