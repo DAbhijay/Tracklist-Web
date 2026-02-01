@@ -6,7 +6,7 @@ const fs = require("fs");
 const isProd = process.env.NODE_ENV === "production";
 const dbDir = isProd 
   ? "/opt/render/project/data"  // Persistent storage on Render
-  : path.join(__dirname, "db");  // Local development
+  : path.join(__dirname);  // Local development
 
 // Ensure directory exists
 if (!fs.existsSync(dbDir)) {
