@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: tracklist-web
+    runtime: node
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+    disk:
+      name: tracklist-data
+      mountPath: /opt/render/project/data
+      sizeGB: 1
