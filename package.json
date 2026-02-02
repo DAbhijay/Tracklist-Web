@@ -12,7 +12,6 @@
     "grocery",
     "tasks",
     "tracking",
-    "sqlite",
     "postgresql",
     "authentication"
   ],
