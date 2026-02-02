@@ -6,6 +6,14 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <title>Tracklist Web</title>
 
+    <!-- AUTH CHECK - MUST BE FIRST -->
+    <script>
+      if (!localStorage.getItem('auth_token') && 
+          !window.location.pathname.includes('login')) {
+        window.location.href = '/login.html';
+      }
+    </script>
+
     <link rel="stylesheet" href="tracklist.css" />
     <script src="Tracklist JS/utilities.js"></script>
     <script src="Tracklist JS/storage.js"></script>
@@ -39,13 +47,12 @@
         <span>✓</span> Tasks
       </button>
       <!-- Export/Import buttons will be added here by export.js -->
-      <!-- Logout button will be added here -->
       <button type="button" class="nav-btn logout-btn" id="logout-btn" style="margin-left: auto;">
         <span>🚪</span> Logout
       </button>
     </nav>
 
-    <!-- User info banner (optional - shows current user) -->
+    <!-- User info banner -->
     <div id="user-banner" style="
       background: #f0f9ff;
       border-bottom: 1px solid #bfdbfe;

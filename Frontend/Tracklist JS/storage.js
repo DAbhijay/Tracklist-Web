@@ -1,4 +1,4 @@
-// Storage.js - API communication layer
+// Storage.js - API communication layer with authentication
 // This file must be loaded BEFORE groceries.js and tasks.js
 
 const API_BASE = window.location.hostname === 'localhost'
@@ -7,6 +7,60 @@ const API_BASE = window.location.hostname === 'localhost'
 
 console.log('📡 Storage layer initialized, API base:', API_BASE);
 
+// Check auth IMMEDIATELY on page load
+(function() {
+  // Don't check if we're already on login page
+  if (window.location.pathname.includes('login.html') || 
+      window.location.pathname.includes('login')) {
+    return;
+  }
+  
+  const token = localStorage.getItem('auth_token');
+  if (!token) {
+    console.log('🔒 No auth token found, redirecting to login');
+    window.location.href = '/login.html';
+  }
+})();
+
+// ----- AUTH HELPERS -----
+
+function getAuthToken() {
+  return localStorage.getItem('auth_token');
+}
+
+function getAuthHeaders() {
+  const token = getAuthToken();
+  return {
+    'Content-Type': 'application/json',
+    ...(token && { 'Authorization': `Bearer ${token}` })
+  };
+}
+
+function handleUnauthorized() {
+  // Token expired or invalid, redirect to login
+  console.warn('⚠️ Unauthorized - redirecting to login');
+  localStorage.removeItem('auth_token');
+  localStorage.removeItem('username');
+  localStorage.removeItem('isDemo');
+  window.location.href = '/login.html';
+}
+
+function getCurrentUsername() {
+  return localStorage.getItem('username') || 'unknown';
+}
+
+function isDemo() {
+  return localStorage.getItem('isDemo') === 'true';
+}
+
+function logout() {
+  localStorage.removeItem('auth_token');
+  localStorage.removeItem('username');
+  localStorage.removeItem('isDemo');
+  localStorage.removeItem('lastActivePage');
+  window.location.href = '/login.html';
+}
+
 // ----- GROCERY API FUNCTIONS -----
 
 async function loadGroceries() {
@@ -14,10 +68,13 @@ async function loadGroceries() {
     console.log('🔄 Loading groceries from:', `${API_BASE}/groceries`);
     const res = await fetch(`${API_BASE}/groceries`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: getAuthHeaders(),
     });
+    
+    if (res.status === 401 || res.status === 403) {
+      handleUnauthorized();
+      return [];
+    }
     
     console.log('📡 Groceries API response status:', res.status, res.statusText);
     
@@ -49,11 +106,14 @@ async function saveGroceries(groceries) {
   try {
     const res = await fetch(`${API_BASE}/groceries`, {
       method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: getAuthHeaders(),
       body: JSON.stringify(groceries),
     });
+    
+    if (res.status === 401 || res.status === 403) {
+      handleUnauthorized();
+      throw new Error('Unauthorized');
+    }
     
     if (!res.ok) {
       throw new Error(`Failed to save groceries: ${res.statusText}`);
@@ -73,10 +133,13 @@ async function loadTasks() {
     console.log('🔄 Loading tasks from:', `${API_BASE}/tasks`);
     const res = await fetch(`${API_BASE}/tasks`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: getAuthHeaders(),
     });
+    
+    if (res.status === 401 || res.status === 403) {
+      handleUnauthorized();
+      return [];
+    }
     
     console.log('📡 Tasks API response status:', res.status, res.statusText);
     
@@ -108,11 +171,14 @@ async function saveTasks(tasks) {
   try {
     const res = await fetch(`${API_BASE}/tasks`, {
       method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: getAuthHeaders(),
       body: JSON.stringify(tasks),
     });
+    
+    if (res.status === 401 || res.status === 403) {
+      handleUnauthorized();
+      throw new Error('Unauthorized');
+    }
     
     if (!res.ok) {
       throw new Error(`Failed to save tasks: ${res.statusText}`);
@@ -130,5 +196,11 @@ window.loadGroceries = loadGroceries;
 window.saveGroceries = saveGroceries;
 window.loadTasks = loadTasks;
 window.saveTasks = saveTasks;
+window.getAuthToken = getAuthToken;
+window.getAuthHeaders = getAuthHeaders;
+window.getCurrentUsername = getCurrentUsername;
+window.isDemo = isDemo;
+window.logout = logout;
 
 console.log('✅ Storage API functions registered globally');
+console.log('👤 Current user:', getCurrentUsername(), isDemo() ? '(Demo)' : '(Family)');
