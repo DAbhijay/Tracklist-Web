@@ -1,6 +1,6 @@
 const db = require('../db/database');
 
-console.log('Groceries store initialized (using SQLite with user isolation)');
+console.log('Groceries store initialized (using PostgreSQL with user isolation)');
 
 // ----- Helper Functions -----
 
@@ -23,7 +23,7 @@ async function getAll(username) {
             g.id,
             g.name,
             g.expanded,
-            GROUP_CONCAT(gp.purchased_at) as purchases
+            STRING_AGG(gp.purchased_at, ',') as purchases
         FROM groceries g
         LEFT JOIN grocery_purchases gp ON g.id = gp.grocery_id
         WHERE g.username = ?
@@ -44,7 +44,7 @@ async function add(username, name) {
             g.id,
             g.name,
             g.expanded,
-            GROUP_CONCAT(gp.purchased_at) as purchases
+            STRING_AGG(gp.purchased_at, ',') as purchases
         FROM groceries g
         LEFT JOIN grocery_purchases gp ON g.id = gp.grocery_id
         WHERE LOWER(g.name) = LOWER(?) AND g.username = ?
@@ -81,7 +81,7 @@ async function recordPurchase(username, name) {
             g.id,
             g.name,
             g.expanded,
-            GROUP_CONCAT(gp.purchased_at) as purchases
+            STRING_AGG(gp.purchased_at, ',') as purchases
         FROM groceries g
         LEFT JOIN grocery_purchases gp ON g.id = gp.grocery_id
         WHERE LOWER(g.name) = LOWER(?) AND g.username = ?
@@ -117,7 +117,7 @@ async function update(username, name, updates) {
             g.id,
             g.name,
             g.expanded,
-            GROUP_CONCAT(gp.purchased_at) as purchases
+            STRING_AGG(gp.purchased_at, ',') as purchases
         FROM groceries g
         LEFT JOIN grocery_purchases gp ON g.id = gp.grocery_id
         WHERE LOWER(g.name) = LOWER(?) AND g.username = ?
