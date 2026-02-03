@@ -4,7 +4,7 @@ const db = require('../db/database');
 
 async function getAll(username) {
     const query = `
-        SELECT id, name, completed, dueDate
+        SELECT id, name, completed, "dueDate"
         FROM tasks
         WHERE username = ?
         ORDER BY id ASC
@@ -28,7 +28,7 @@ async function add(username, { name, dueDate = null }) {
     };
 
     const query = `
-        INSERT INTO tasks (id, username, name, completed, dueDate)
+        INSERT INTO tasks (id, username, name, completed, "dueDate")
         VALUES (?, ?, ?, ?, ?)
     `;
     
@@ -43,7 +43,7 @@ async function add(username, { name, dueDate = null }) {
 
 async function update(username, id, updates) {
     const findQuery = `
-        SELECT id, name, completed, dueDate
+        SELECT id, name, completed, "dueDate"
         FROM tasks
         WHERE id = ? AND username = ?
     `;
@@ -59,7 +59,7 @@ async function update(username, id, updates) {
         SET
             name = COALESCE(?, name),
             completed = COALESCE(?, completed),
-            dueDate = COALESCE(?, dueDate)
+            "dueDate" = COALESCE(?, "dueDate")
         WHERE id = ? AND username = ?
     `;
     
@@ -82,7 +82,7 @@ async function update(username, id, updates) {
 
 async function toggle(username, id) {
     const findQuery = `
-        SELECT id, name, completed, dueDate
+        SELECT id, name, completed, "dueDate"
         FROM tasks
         WHERE id = ? AND username = ?
     `;
@@ -117,7 +117,7 @@ async function replaceAll(username, newTasks) {
 
     // Insert new tasks
     const insertQuery = `
-        INSERT INTO tasks (id, username, name, completed, dueDate)
+        INSERT INTO tasks (id, username, name, completed, "dueDate")
         VALUES (?, ?, ?, ?, ?)
     `;
     
