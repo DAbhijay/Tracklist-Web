@@ -42,7 +42,7 @@ app.post("/api/auth/login", async (req, res) => {
   }
 });
 
-// Verify token endpoint (optional - for frontend to check if token is still valid)
+// Verify token endpoint
 app.get("/api/auth/verify", (req, res) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
@@ -64,30 +64,24 @@ app.get("/api/auth/verify", (req, res) => {
 
 // ===== PROTECTED API ROUTES (Require authentication) =====
 
-// Import routes
 const groceriesRouter = require("./routes/groceries");
 const tasksRouter = require("./routes/tasks");
 
-// Use routes (these now have authentication middleware inside them)
 app.use("/api/groceries", groceriesRouter);
 app.use("/api/tasks", tasksRouter);
 
 // ===== FRONTEND ROUTES =====
 
-// Root route - serve login page or main app
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "../Frontend/tracklist.html"));
+  res.sendFile(path.join(__dirname, "../Frontend/login.html"));
 });
 
-// Catch-all for SPA routing
-app.get("*", (req, res) => {
-  // Serve static files if they exist, otherwise serve the main HTML
-  const filePath = path.join(__dirname, "../Frontend", req.path);
-  if (require("fs").existsSync(filePath)) {
-    res.sendFile(filePath);
-  } else {
-    res.sendFile(path.join(__dirname, "../Frontend/tracklist.html"));
-  }
+app.get("/login.html", (req, res) => {
+  res.sendFile(path.join(__dirname, "../Frontend/login.html"));
+});
+
+app.get("/tracklist.html", (req, res) => {
+  res.sendFile(path.join(__dirname, "../Frontend/tracklist.html"));
 });
 
 // Global Error Handler
@@ -98,10 +92,51 @@ app.use((err, req, res, next) => {
   res.status(status).json({ error: message });
 });
 
-// Start Server
-app.listen(PORT, () => {
+// ===== RESET AND SEED DEMO DATA ON STARTUP =====
+const groceriesStore = require("./data/groceries.store");
+const tasksStore = require("./data/tasks.store");
+
+async function seedDemoData() {
+  try {
+    // Small delay to make sure database schema is ready
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    // Clear old demo data
+    await groceriesStore.reset('demo');
+    await tasksStore.replaceAll('demo', []);
+
+    // Seed fresh grocery items
+    await groceriesStore.add('demo', 'Milk');
+    await groceriesStore.add('demo', 'Eggs');
+    await groceriesStore.add('demo', 'Bread');
+    await groceriesStore.add('demo', 'Bananas');
+    await groceriesStore.add('demo', 'Chicken');
+
+    // Record some purchases so history shows up
+    await groceriesStore.recordPurchase('demo', 'Milk');
+    await groceriesStore.recordPurchase('demo', 'Eggs');
+
+    // Seed fresh tasks
+    const now = Date.now();
+    await tasksStore.replaceAll('demo', [
+      { id: now, name: 'Buy groceries', completed: false, dueDate: new Date(now + 86400000).toISOString().split('T')[0] },
+      { id: now + 1, name: 'Clean the house', completed: true, dueDate: null },
+      { id: now + 2, name: 'Walk the dog', completed: false, dueDate: new Date(now + 172800000).toISOString().split('T')[0] }
+    ]);
+
+    console.log('✅ Demo data seeded on startup');
+  } catch (err) {
+    console.error('Error seeding demo data:', err.message);
+  }
+}
+
+// ===== START SERVER =====
+app.listen(PORT, async () => {
   console.log(`✅ Server running on http://localhost:${PORT}`);
   console.log(`📱 Open your app at: http://localhost:${PORT}`);
   console.log(`🔐 Authentication enabled`);
   console.log(`👤 Demo login: username=demo, password=demo123`);
+
+  // Seed demo data after server starts
+  await seedDemoData();
 });
